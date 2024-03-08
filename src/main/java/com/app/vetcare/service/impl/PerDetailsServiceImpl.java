@@ -8,6 +8,7 @@ import com.app.vetcare.model.persistence.TestDetailsDao;
 import com.app.vetcare.model.request.PetDetailsRequestModel;
 import com.app.vetcare.model.response.PetDetailsResponse;
 import com.app.vetcare.model.response.TestResponse;
+import com.app.vetcare.repositories.LoginRepository;
 import com.app.vetcare.repositories.PetDetailsRepository;
 import com.app.vetcare.repositories.PetTestDetailsRepository;
 import com.app.vetcare.repositories.TestRepository;
@@ -17,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,12 +32,15 @@ public class PerDetailsServiceImpl implements PetDetailsService, PetTestDetailsS
     private final PetTestDetailsRepository petTestDetailsRepository;
 
     private final TestRepository testRepository;
+
+    private final LoginRepository loginRepository;
     private final CommonConfigMapper mapper;
 
-    public PerDetailsServiceImpl(PetDetailsRepository petDetailsRepository, PetTestDetailsRepository petTestDetailsRepository, TestRepository testRepository, CommonConfigMapper mapper) {
+    public PerDetailsServiceImpl(PetDetailsRepository petDetailsRepository, PetTestDetailsRepository petTestDetailsRepository, TestRepository testRepository, LoginRepository loginRepository, CommonConfigMapper mapper) {
         this.petDetailsRepository = petDetailsRepository;
         this.petTestDetailsRepository = petTestDetailsRepository;
         this.testRepository = testRepository;
+        this.loginRepository = loginRepository;
         this.mapper = mapper;
     }
 
@@ -47,6 +50,9 @@ public class PerDetailsServiceImpl implements PetDetailsService, PetTestDetailsS
     @Override
     public PetDetailsResponse create(PetDetailsRequestModel request) {
         PetDetailsDao petDetailsDao=mapper.mapPetRequestToPetDetailsDao(request);
+        Long agentId= Long.parseLong(request.getAgentId().toString());
+        petDetailsDao.setAgentDao(loginRepository.getReferenceById(agentId));
+
         return mapper.mapPetDetailsDaoToPetDetailsResponse(petDetailsRepository.save(petDetailsDao));
     }
 
